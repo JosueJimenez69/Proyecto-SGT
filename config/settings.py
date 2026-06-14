@@ -4,7 +4,6 @@ Aquí se definen las apps instaladas, base de datos, templates, archivos static,
 autenticación, Django REST Framework y Channels.
 """
 
-import os
 from pathlib import Path
 
 # Ruta base del proyecto.
@@ -30,10 +29,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Apps externas.
+    # Apps externas necesarias para el proyecto.
     'rest_framework',
-    'crispy_forms',
-    'django_filters',
     'channels',
 
     # Apps del proyecto SGT.
@@ -123,7 +120,6 @@ LANGUAGE_CODE = 'es-py'
 TIME_ZONE = 'America/Asuncion'
 
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -149,20 +145,12 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 LOGIN_URL = '/accounts/login/'
 
 
-# Configuración de Crispy Forms.
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
-
-
-# Configuración básica de correo.
+# Configuración básica de correo para desarrollo.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
-# Configuración de Django REST Framework.
-REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-    ],
-}
+# Configuración básica de Django REST Framework.
+REST_FRAMEWORK = {}
 
 
 # Configuración básica de Channels.
