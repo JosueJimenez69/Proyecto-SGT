@@ -1,50 +1,173 @@
-from pathlib import Path  # Permite manejar rutas del proyecto de forma ordenada.
+"""
+Configuración principal del proyecto SGT.
+Aquí se definen las apps instaladas, base de datos, templates, archivos static,
+autenticación, Django REST Framework y Channels.
+"""
 
-BASE_DIR = Path(__file__).resolve().parent.parent  # Ruta base del proyecto.
+import os
+from pathlib import Path
 
-SECRET_KEY = 'django-insecure-cambiar-en-produccion'  # Clave de seguridad para desarrollo.
+# Ruta base del proyecto.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = True  # Activa modo desarrollo.
+# Clave secreta del proyecto. En producción debe cambiarse.
+SECRET_KEY = 'django-insecure-your-secret-key-here-change-in-production'
 
-ALLOWED_HOSTS = []  # Hosts permitidos durante desarrollo.
+# Modo desarrollo activado.
+DEBUG = True
 
+# Permite acceder desde cualquier host en desarrollo.
+ALLOWED_HOSTS = ['*']
+
+
+# Aplicaciones instaladas.
 INSTALLED_APPS = [
-    'django.contrib.admin',  # Panel administrativo de Django.
-    'django.contrib.auth',  # Sistema de autenticación.
-    'django.contrib.contenttypes',  # Manejo de tipos de contenido.
-    'django.contrib.sessions',  # Manejo de sesiones.
-    'django.contrib.messages',  # Sistema de mensajes.
-    'django.contrib.staticfiles',  # Archivos estáticos.
+    # Apps internas de Django.
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
 
-    'rest_framework',  # Django REST Framework.
-    'channels',  # Django Channels para WebSockets.
+    # Apps externas.
+    'rest_framework',
+    'crispy_forms',
+    'django_filters',
+    'channels',
 
-    'apps.accounts',  # App de usuarios.
-    'apps.boards',  # App de tableros, listas y tarjetas.
-    'apps.notifications',  # App de notificaciones.
-    'apps.realtime',  # App de tiempo real.
+    # Apps del proyecto SGT.
+    'boards',
+    'users',
+    'notifications',
+    'realtime',
 ]
 
-ASGI_APPLICATION = 'config.asgi.application'  # Configuración ASGI para Channels.
 
+# Middlewares del proyecto.
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+
+# Archivo principal de rutas.
+ROOT_URLCONF = 'config.urls'
+
+
+# Configuración de templates.
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',  # Motor de templates.
-        'DIRS': [BASE_DIR / 'templates'],  # Carpeta global de templates.
-        'APP_DIRS': True,  # Permite templates dentro de cada app.
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+
+        # Carpeta general de templates.
+        'DIRS': [BASE_DIR / 'templates'],
+
+        # Permite usar templates dentro de cada app.
+        'APP_DIRS': True,
+
         'OPTIONS': {
             'context_processors': [
-                'django.template.context_processors.request',  # Permite acceder a request.
-                'django.contrib.auth.context_processors.auth',  # Permite acceder al usuario.
-                'django.contrib.messages.context_processors.messages',  # Permite mensajes.
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
 ]
 
-STATIC_URL = 'static/'  # Ruta pública de archivos estáticos.
-STATICFILES_DIRS = [BASE_DIR / 'static']  # Carpeta static del proyecto.
 
-LOGIN_URL = 'login'  # Redirige aquí si el usuario no inició sesión.
-LOGIN_REDIRECT_URL = 'dashboard'  # Redirige al dashboard luego del login.
-LOGOUT_REDIRECT_URL = 'login'  # Redirige al login luego del logout.
+# Configuración WSGI para despliegues tradicionales.
+WSGI_APPLICATION = 'config.wsgi.application'
+
+# Configuración ASGI para soporte de Channels y WebSockets.
+ASGI_APPLICATION = 'config.asgi.application'
+
+
+# Base de datos SQLite para desarrollo.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+
+# Validadores de contraseña.
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+
+# Idioma del sistema.
+LANGUAGE_CODE = 'es-py'
+
+# Zona horaria de Paraguay.
+TIME_ZONE = 'America/Asuncion'
+
+USE_I18N = True
+
+USE_TZ = True
+
+
+# Archivos estáticos.
+STATIC_URL = '/static/'
+
+# Carpeta static general del proyecto.
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Carpeta donde Django recopila archivos estáticos en producción.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+# Tipo de ID automático por defecto.
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Configuración de autenticación.
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login/'
+
+
+# Configuración de Crispy Forms.
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+
+# Configuración básica de correo.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+# Configuración de Django REST Framework.
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
+}
+
+
+# Configuración básica de Channels.
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
