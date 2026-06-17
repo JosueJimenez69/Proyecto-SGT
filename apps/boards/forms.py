@@ -1,40 +1,95 @@
-from django import forms  # Importamos formularios de Django.
+from django import forms
 
-from .models import Board, TaskList, Card  # Importamos los modelos principales.
+# Importamos los modelos principales de la app boards.
+from .models import Board, TaskList, Card
 
 
 class BoardForm(forms.ModelForm):
-    # Formulario para crear y editar tableros.
+    """
+    Formulario para crear y editar tableros.
+    """
+
     class Meta:
-        model = Board  # Modelo asociado.
-        fields = ['title', 'description', 'members']  # Campos visibles.
+        model = Board
+
+        fields = [
+            'title',
+            'description',
+            'members'
+        ]
+
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),  # Input Bootstrap.
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),  # Área de texto.
-            'members': forms.SelectMultiple(attrs={'class': 'form-control'}),  # Selección múltiple.
+            'title': forms.TextInput(
+                attrs={'class': 'form-control'}
+            ),
+            'description': forms.Textarea(
+                attrs={
+                    'class': 'form-control',
+                    'rows': 3
+                }
+            ),
+            'members': forms.SelectMultiple(
+                attrs={'class': 'form-control'}
+            ),
         }
 
 
 class TaskListForm(forms.ModelForm):
-    # Formulario para crear listas dentro de un tablero.
+    """
+    Formulario para crear listas dentro de un tablero.
+    """
+
     class Meta:
-        model = TaskList  # Modelo asociado.
-        fields = ['title', 'position']  # Campos visibles.
+        model = TaskList
+
+        fields = [
+            'title',
+            'position'
+        ]
+
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),  # Input Bootstrap.
-            'position': forms.NumberInput(attrs={'class': 'form-control'}),  # Número de posición.
+            'title': forms.TextInput(
+                attrs={'class': 'form-control'}
+            ),
+            'position': forms.NumberInput(
+                attrs={'class': 'form-control'}
+            ),
         }
 
 
 class CardForm(forms.ModelForm):
-    # Formulario para crear tarjetas o tareas.
+    """
+    Formulario para crear y editar tarjetas o tareas.
+    """
+
     class Meta:
-        model = Card  # Modelo asociado.
-        fields = ['title', 'description', 'assigned_to', 'position', 'status']  # Campos visibles.
+        model = Card
+
+        fields = [
+            'title',
+            'description',
+            'assigned_to',
+            'position',
+            'completed'
+        ]
+
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),  # Título.
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),  # Descripción.
-            'assigned_to': forms.Select(attrs={'class': 'form-control'}),  # Usuario asignado.
-            'position': forms.NumberInput(attrs={'class': 'form-control'}),  # Posición.
-            'status': forms.Select(attrs={'class': 'form-control'}),  # Estado.
+            'title': forms.TextInput(
+                attrs={'class': 'form-control'}
+            ),
+            'description': forms.Textarea(
+                attrs={
+                    'class': 'form-control',
+                    'rows': 3
+                }
+            ),
+            'assigned_to': forms.Select(
+                attrs={'class': 'form-control'}
+            ),
+            'position': forms.NumberInput(
+                attrs={'class': 'form-control'}
+            ),
+            'completed': forms.CheckboxInput(
+                attrs={'class': 'form-check-input'}
+            ),
         }
