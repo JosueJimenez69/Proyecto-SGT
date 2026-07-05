@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Eliminar tablero</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+
+        <div class="card shadow mx-auto" style="max-width:600px;">
+
+            <div class="card-body text-center">
+
+                <h2 class="text-danger">
+
+                    Eliminar tablero
+
+                </h2>
+
+                <hr>
+
+                <p>
+
+                    ¿Deseas eliminar el tablero
+
+                    <strong>
+
+                        {{ board.title }}
+
+                    </strong>?
+
+                </p>
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    <button class="btn btn-danger">
+
+                        Sí, eliminar
+
+                    </button>
+
+                    <a href="{% url 'boards:dashboard' %}" class="btn btn-secondary">
+
+                        Cancelar
+
+                    </a>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -4,71 +4,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Sistema de Gestión de Tareas</title>
+    <title>Dashboard | Sistema de Gestión de Tareas</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #eef2f7;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .card-board {
+            transition: .3s;
+            border: none;
+            border-radius: 15px;
+        }
+
+        .card-board:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, .15);
+        }
+
+        .board-title {
+            font-weight: 700;
+        }
+
+        .info {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .btn-action {
+            width: 100%;
+        }
+
+        .dashboard-title {
+            font-weight: 700;
+        }
+    </style>
+
 </head>
 
-<body class="bg-light">
+<body>
 
-    <!-- Barra superior -->
-    <nav class="navbar navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+
         <div class="container">
 
-            <span class="navbar-brand fw-bold">
-                SGT - Gestión de Tareas
-            </span>
+            <a class="navbar-brand" href="#">
+                📋 Sistema de Gestión de Tareas
+            </a>
 
             <div class="d-flex align-items-center">
 
                 <span class="text-white me-3">
-                    Bienvenido, <strong>{{ request.user.username }}</strong>
+
+                    👤 {{ request.user.username }}
+
                 </span>
 
                 <form method="post" action="{% url 'logout' %}">
                     {% csrf_token %}
-                    <button class="btn btn-outline-light btn-sm">
+
+                    <button class="btn btn-outline-light">
+
                         Cerrar sesión
+
                     </button>
+
                 </form>
 
             </div>
 
         </div>
+
     </nav>
 
 
     <div class="container mt-5">
 
-        <!-- Mensajes -->
         {% if messages %}
+
         {% for message in messages %}
-        <div class="alert alert-success alert-dismissible fade show shadow-sm">
+
+        <div class="alert alert-success alert-dismissible fade show">
 
             {{ message }}
 
             <button class="btn-close" data-bs-dismiss="alert"></button>
 
         </div>
+
         {% endfor %}
+
         {% endif %}
 
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="row align-items-center mb-4">
 
-            <div>
+            <div class="col-md-8">
 
-                <h2 class="fw-bold">Mis Tableros</h2>
+                <h2 class="dashboard-title">
+
+                    Mis Tableros
+
+                </h2>
 
                 <p class="text-muted">
-                    Administra todos tus proyectos desde un solo lugar.
+
+                    Organiza tus tareas y proyectos de forma sencilla.
+
                 </p>
 
             </div>
 
-            <a href="{% url 'boards:board_create' %}" class="btn btn-primary btn-lg">
-                + Nuevo tablero
-            </a>
+            <div class="col-md-4 text-end">
+
+                <a href="{% url 'boards:board_create' %}" class="btn btn-primary btn-lg">
+
+                    ➕ Nuevo tablero
+
+                </a>
+
+            </div>
 
         </div>
 
@@ -79,53 +141,87 @@
 
             {% for board in boards %}
 
-            <div class="col-lg-4 col-md-6 mb-4">
+            <div class="col-lg-4 mb-4">
 
-                <div class="card shadow border-0 h-100">
+                <div class="card card-board h-100">
 
                     <div class="card-body">
 
-                        <h4 class="fw-bold">
+                        <h4 class="board-title">
+
                             {{ board.title }}
+
                         </h4>
 
                         <p class="text-muted">
 
                             {% if board.description %}
+
                             {{ board.description }}
+
                             {% else %}
+
                             Sin descripción.
+
                             {% endif %}
 
                         </p>
 
                         <hr>
 
-                        <p class="mb-1">
-                            <strong>Propietario:</strong>
+                        <div class="info mb-2">
+
+                            👤 <strong>Propietario:</strong>
+
                             {{ board.owner.username }}
-                        </p>
 
-                        <p class="mb-1">
-                            <strong>Listas:</strong>
+                        </div>
+
+                        <div class="info mb-2">
+
+                            📋 <strong>Listas:</strong>
+
                             {{ board.lists.count }}
-                        </p>
 
-                        <p class="mb-3">
-                            <strong>Creado:</strong>
+                        </div>
+
+                        <div class="info mb-3">
+
+                            📅 <strong>Creado:</strong>
 
                             {% if board.created_at %}
+
                             {{ board.created_at|date:"d/m/Y" }}
+
                             {% else %}
+
                             No disponible
+
                             {% endif %}
-                        </p>
 
-                        <a href="{% url 'boards:board_detail' board.id %}" class="btn btn-success w-100">
+                        </div>
 
-                            Abrir tablero
+                        <div class="d-grid gap-2">
 
-                        </a>
+                            <a href="{% url 'boards:board_detail' board.id %}" class="btn btn-success btn-action">
+
+                                Abrir tablero
+
+                            </a>
+
+                            <a href="{% url 'boards:board_update' board.id %}" class="btn btn-warning btn-action">
+
+                                Editar
+
+                            </a>
+
+                            <a href="{% url 'boards:board_delete' board.id %}" class="btn btn-danger btn-action">
+
+                                Eliminar
+
+                            </a>
+
+                        </div>
 
                     </div>
 
@@ -139,13 +235,23 @@
 
         {% else %}
 
-        <div class="alert alert-info shadow-sm">
+        <div class="card shadow-sm">
 
-            <h5>No tienes tableros.</h5>
+            <div class="card-body text-center">
 
-            <p class="mb-0">
-                Presiona <strong>Nuevo tablero</strong> para comenzar.
-            </p>
+                <h3>
+
+                    No existen tableros.
+
+                </h3>
+
+                <p>
+
+                    Presiona el botón <strong>Nuevo tablero</strong> para comenzar a gestionar tus tareas.
+
+                </p>
+
+            </div>
 
         </div>
 

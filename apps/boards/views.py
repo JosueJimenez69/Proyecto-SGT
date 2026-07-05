@@ -66,6 +66,88 @@ def board_create(request):
 
 
 @login_required
+def board_update(request, board_id):
+    """
+    Permite editar un tablero existente.
+    """
+
+    board = get_object_or_404(
+        Board,
+        id=board_id,
+        owner=request.user
+    )
+
+    if request.method == "POST":
+
+        form = BoardForm(
+            request.POST,
+            instance=board
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Tablero actualizado correctamente."
+            )
+
+            return redirect(
+                "boards:dashboard"
+            )
+
+    else:
+
+        form = BoardForm(
+            instance=board
+        )
+
+    return render(
+        request,
+        "boards/board_form.html",
+        {
+            "form": form,
+            "titulo": "Editar tablero"
+        }
+    )
+
+
+@login_required
+def board_delete(request, board_id):
+    """
+    Permite eliminar un tablero del usuario.
+    """
+
+    board = get_object_or_404(
+        Board,
+        id=board_id,
+        owner=request.user
+    )
+
+    if request.method == "POST":
+
+        board.delete()
+
+        messages.success(
+            request,
+            "Tablero eliminado correctamente."
+        )
+
+        return redirect(
+            "boards:dashboard"
+        )
+
+    return render(
+        request,
+        "boards/board_delete.html",
+        {
+            "board": board
+        }
+    )
+
+
+@login_required
 def list_create(request, board_id):
     """
     Permite crear una nueva lista dentro de un tablero del usuario.
