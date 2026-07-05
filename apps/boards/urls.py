@@ -14,3 +14,4 @@ urlpatterns = [
     path("tableros/<int:board_id>/listas/crear/", views.list_create, name="list_create"),
     path("listas/<int:list_id>/tarjetas/crear/", views.card_create, name="card_create"),
 ]
+

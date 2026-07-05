@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Sistema de Gestión de Tareas</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,19 +11,67 @@
 
 <body class="bg-light">
 
+    <!-- Barra superior -->
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container">
+
+            <span class="navbar-brand fw-bold">
+                SGT - Gestión de Tareas
+            </span>
+
+            <div class="d-flex align-items-center">
+
+                <span class="text-white me-3">
+                    Bienvenido, <strong>{{ request.user.username }}</strong>
+                </span>
+
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-light btn-sm">
+                        Cerrar sesión
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+    </nav>
+
+
     <div class="container mt-5">
 
-        <div class="d-flex justify-content-between align-items-center">
+        <!-- Mensajes -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show shadow-sm">
 
-            <h2>Mis Tableros</h2>
+            {{ message }}
 
-            <a href="{% url 'boards:board_create' %}" class="btn btn-primary">
-                Nuevo tablero
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+
+                <h2 class="fw-bold">Mis Tableros</h2>
+
+                <p class="text-muted">
+                    Administra todos tus proyectos desde un solo lugar.
+                </p>
+
+            </div>
+
+            <a href="{% url 'boards:board_create' %}" class="btn btn-primary btn-lg">
+                + Nuevo tablero
             </a>
 
         </div>
 
-        <hr>
 
         {% if boards %}
 
@@ -30,19 +79,51 @@
 
             {% for board in boards %}
 
-            <div class="col-md-4">
+            <div class="col-lg-4 col-md-6 mb-4">
 
-                <div class="card shadow-sm mb-4">
+                <div class="card shadow border-0 h-100">
 
                     <div class="card-body">
 
-                        <h4>{{ board.title }}</h4>
+                        <h4 class="fw-bold">
+                            {{ board.title }}
+                        </h4>
 
-                        <p>{{ board.description }}</p>
+                        <p class="text-muted">
 
-                        <a href="{% url 'boards:board_detail' board.id %}" class="btn btn-success">
+                            {% if board.description %}
+                            {{ board.description }}
+                            {% else %}
+                            Sin descripción.
+                            {% endif %}
 
-                            Abrir
+                        </p>
+
+                        <hr>
+
+                        <p class="mb-1">
+                            <strong>Propietario:</strong>
+                            {{ board.owner.username }}
+                        </p>
+
+                        <p class="mb-1">
+                            <strong>Listas:</strong>
+                            {{ board.lists.count }}
+                        </p>
+
+                        <p class="mb-3">
+                            <strong>Creado:</strong>
+
+                            {% if board.created_at %}
+                            {{ board.created_at|date:"d/m/Y" }}
+                            {% else %}
+                            No disponible
+                            {% endif %}
+                        </p>
+
+                        <a href="{% url 'boards:board_detail' board.id %}" class="btn btn-success w-100">
+
+                            Abrir tablero
 
                         </a>
 
@@ -58,15 +139,21 @@
 
         {% else %}
 
-        <div class="alert alert-info">
+        <div class="alert alert-info shadow-sm">
 
-            Aún no tienes tableros creados.
+            <h5>No tienes tableros.</h5>
+
+            <p class="mb-0">
+                Presiona <strong>Nuevo tablero</strong> para comenzar.
+            </p>
 
         </div>
 
         {% endif %}
 
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

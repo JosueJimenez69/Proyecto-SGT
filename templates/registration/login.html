@@ -3,18 +3,118 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión - SGT</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
-    <h1>Iniciar sesión</h1>
+<body class="bg-light">
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
+    <div class="container d-flex justify-content-center align-items-center" style="min-height:100vh;">
 
-        <button type="submit">Ingresar</button>
-    </form>
+        <div class="card shadow-lg border-0" style="max-width:430px; width:100%;">
+
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h3 class="mb-1">SGT</h3>
+                <small>Sistema de Gestión de Tareas</small>
+            </div>
+
+            <div class="card-body p-4">
+
+                <h4 class="text-center mb-4">
+                    Iniciar sesión
+                </h4>
+
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {% if form.errors %}
+                <div class="alert alert-danger text-center">
+                    Usuario o contraseña incorrectos.
+                </div>
+                {% endif %}
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Usuario
+                        </label>
+
+                        {{ form.username }}
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-semibold">
+                            Contraseña
+                        </label>
+
+                        {{ form.password }}
+
+                    </div>
+
+                    <button class="btn btn-primary w-100" type="submit">
+                        Ingresar
+                    </button>
+
+                </form>
+
+                <hr>
+
+                <div class="text-center">
+
+                    <p class="mb-2">
+
+                        ¿No tienes una cuenta?
+
+                        <a href="{% url 'accounts:register' %}" class="fw-semibold text-decoration-none">
+
+                            Crear cuenta
+
+                        </a>
+
+                    </p>
+
+                    <p class="mb-0">
+
+                        <a href="{% url 'accounts:password_reset' %}" class="text-decoration-none">
+
+                            ¿Olvidaste tu contraseña?
+
+                        </a>
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer text-center text-muted">
+
+                <small>
+                    Proyecto SGT • Django 6
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>
