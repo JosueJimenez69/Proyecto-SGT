@@ -10,27 +10,24 @@ from .forms import RegisterForm
 
 def register_view(request):
     """
-    Registro de usuarios.
+    Permite registrar un nuevo usuario en el sistema.
     """
 
     if request.method == "POST":
-
         form = RegisterForm(request.POST)
 
         if form.is_valid():
-
             user = form.save()
-
             login(request, user)
-
-            return redirect('dashboard')
+            return redirect("boards:dashboard")
 
     else:
-
         form = RegisterForm()
 
     return render(
         request,
-        'accounts/register.html',
-        {'form': form}
+        "registration/register.html",
+        {
+            "form": form
+        }
     )

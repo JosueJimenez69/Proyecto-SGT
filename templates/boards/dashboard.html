@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Sistema de Gestión de Tareas</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <h2>Mis Tableros</h2>
+
+            <a href="{% url 'boards:board_create' %}" class="btn btn-primary">
+                Nuevo tablero
+            </a>
+
+        </div>
+
+        <hr>
+
+        {% if boards %}
+
+        <div class="row">
+
+            {% for board in boards %}
+
+            <div class="col-md-4">
+
+                <div class="card shadow-sm mb-4">
+
+                    <div class="card-body">
+
+                        <h4>{{ board.title }}</h4>
+
+                        <p>{{ board.description }}</p>
+
+                        <a href="{% url 'boards:board_detail' board.id %}" class="btn btn-success">
+
+                            Abrir
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="alert alert-info">
+
+            Aún no tienes tableros creados.
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+
+</html>

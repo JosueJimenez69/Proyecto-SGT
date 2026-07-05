@@ -34,11 +34,12 @@ INSTALLED_APPS = [
     'channels',
 
     # Apps del proyecto SGT.
-    'boards',
+    'apps.boards',
+    'apps.notifications',
+    'apps.realtime',
     'users',
-    'notifications',
-    'realtime',
 ]
+
 
 
 # Middlewares del proyecto.
