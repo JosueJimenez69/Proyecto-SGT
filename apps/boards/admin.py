@@ -1,15 +1,73 @@
-# Importamos el administrador de Django.
 from django.contrib import admin
 
-# Importamos los modelos de la app boards.
+# Importamos los modelos que serán administrados desde Django Admin.
+# pyrefly: ignore [missing-import]
 from .models import Board, TaskList, Card
 
+@admin.register(Board)
+class BoardAdmin(admin.ModelAdmin):
+    """
+    Configuración del panel administrativo para tableros.
+    """
 
-# Registramos el modelo Board en el panel admin.
-admin.site.register(Board)
+    # Campos que se mostrarán en la lista de tableros.
+    list_display = (
+        'title',
+        'owner',
+        'created_at'
+    )
 
-# Registramos el modelo TaskList en el panel admin.
-admin.site.register(TaskList)
+    # Permite realizar búsquedas por título y propietario.
+    search_fields = (
+        'title',
+        'owner__username'
+    )
 
-# Registramos el modelo Card en el panel admin.
-admin.site.register(Card)
+    # Muestra una interfaz amigable para seleccionar miembros.
+    filter_horizontal = (
+        'members',
+    )
+
+
+@admin.register(TaskList)
+class TaskListAdmin(admin.ModelAdmin):
+    """
+    Configuración del panel administrativo para listas.
+    """
+
+    # Campos visibles en el listado.
+    list_display = (
+        'title',
+        'board',
+        'position'
+    )
+
+    # Filtro por tablero.
+    list_filter = (
+        'board',
+    )
+
+
+@admin.register(Card)
+class CardAdmin(admin.ModelAdmin):
+    """
+    Configuración del panel administrativo para tarjetas.
+    """
+
+    # Campos visibles en el listado.
+    list_display = (
+        'title',
+        'task_list',
+        'assigned_to',
+        'completed'
+    )
+
+    # Filtro por estado de la tarjeta.
+    list_filter = (
+        'completed',
+    )
+
+    # Búsqueda por título de la tarjeta.
+    search_fields = (
+        'title',
+    )
