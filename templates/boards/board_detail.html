@@ -12,54 +12,42 @@
 <body style="background: linear-gradient(135deg,#0d6efd,#6f42c1); min-height:100vh;">
 
     <nav class="navbar navbar-dark bg-dark shadow">
-
         <div class="container-fluid">
-
             <span class="navbar-brand fw-bold">
-
                 📋 SGT - Gestión de Tareas
-
             </span>
 
             <a href="{% url 'boards:dashboard' %}" class="btn btn-outline-light">
-
                 ← Dashboard
-
             </a>
-
         </div>
-
     </nav>
-
 
     <div class="container-fluid py-4">
 
         <div class="d-flex justify-content-between align-items-center text-white mb-4">
-
             <div>
-
                 <h2 class="fw-bold">
-
                     {{ board.title }}
-
                 </h2>
 
                 <p class="opacity-75">
-
                     {{ board.description|default:"Sin descripción." }}
-
                 </p>
 
+                {% if board.owner != request.user %}
+                <span class="badge bg-light text-dark p-2">
+                    Solo lectura · Eres miembro de este tablero
+                </span>
+                {% endif %}
             </div>
 
+            {% if board.owner == request.user %}
             <a href="{% url 'boards:list_create' board.id %}" class="btn btn-light">
-
                 + Nueva lista
-
             </a>
-
+            {% endif %}
         </div>
-
 
         <div class="d-flex gap-4 overflow-auto pb-4">
 
@@ -68,141 +56,100 @@
             <div class="card shadow border-0" style="min-width:320px;max-width:320px;">
 
                 <div class="card-header bg-primary text-white">
-
                     <div class="d-flex justify-content-between align-items-center">
-
-                        <strong>
-
-                            {{ list.title }}
-
-                        </strong>
+                        <strong>{{ list.title }}</strong>
 
                         <span class="badge bg-light text-dark">
-
                             {{ list.cards.count }}
-
                         </span>
-
                     </div>
-
                 </div>
 
                 <div class="card-body bg-light">
 
+                    {% if board.owner == request.user %}
                     <div class="d-grid gap-2 mb-3">
-
                         <a href="{% url 'boards:list_update' list.id %}" class="btn btn-warning btn-sm">
-
                             ✏ Editar lista
-
                         </a>
 
                         <a href="{% url 'boards:list_delete' list.id %}" class="btn btn-danger btn-sm">
-
                             🗑 Eliminar lista
-
                         </a>
-
                     </div>
 
                     <hr>
+                    {% endif %}
 
                     {% for card in list.cards.all %}
 
                     <div class="card mb-3 shadow-sm border-0">
-
                         <div class="card-body">
-
                             <h6 class="fw-bold">
-
                                 {{ card.title }}
-
                             </h6>
 
                             {% if card.description %}
-
                             <p class="small text-muted">
-
                                 {{ card.description }}
-
                             </p>
-
                             {% endif %}
 
                             {% if card.completed %}
-
                             <span class="badge bg-success">
-
                                 Finalizada
-
                             </span>
-
                             {% else %}
-
                             <span class="badge bg-warning text-dark">
-
                                 Pendiente
-
                             </span>
-
                             {% endif %}
 
+                            {% if board.owner == request.user %}
                             <div class="d-grid gap-2 mt-3">
-
                                 <a href="{% url 'boards:card_update' card.id %}" class="btn btn-outline-primary btn-sm">
-
                                     Editar tarjeta
-
                                 </a>
 
                                 <a href="{% url 'boards:card_delete' card.id %}" class="btn btn-outline-danger btn-sm">
-
                                     Eliminar tarjeta
-
                                 </a>
-
                             </div>
-
+                            {% endif %}
                         </div>
-
                     </div>
 
                     {% empty %}
 
                     <div class="alert alert-light">
-
                         No existen tarjetas.
-
                     </div>
 
                     {% endfor %}
 
+                    {% if board.owner == request.user %}
                     <a href="{% url 'boards:card_create' list.id %}" class="btn btn-success w-100">
-
                         + Agregar tarjeta
-
                     </a>
+                    {% endif %}
 
                 </div>
-
             </div>
 
             {% empty %}
 
             <div class="alert alert-light shadow">
+                <h5>No existen listas.</h5>
 
-                <h5>
-
-                    No existen listas.
-
-                </h5>
-
+                {% if board.owner == request.user %}
                 <p class="mb-0">
-
                     Crea la primera lista para comenzar.
-
                 </p>
-
+                {% else %}
+                <p class="mb-0">
+                    Este tablero aún no tiene listas.
+                </p>
+                {% endif %}
             </div>
 
             {% endfor %}
