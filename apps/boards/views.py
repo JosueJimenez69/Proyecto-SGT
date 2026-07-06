@@ -56,6 +56,7 @@ def board_create(request):
 
             messages.success(request, "Tablero creado correctamente.")
             return redirect("boards:dashboard")
+
     else:
         form = BoardForm()
 
@@ -152,25 +153,131 @@ def list_create(request, board_id):
     """
     Permite crear una nueva lista dentro de un tablero del usuario.
     """
-    board = get_object_or_404(Board, id=board_id, owner=request.user)
+
+    board = get_object_or_404(
+        Board,
+        id=board_id,
+        owner=request.user
+    )
 
     if request.method == "POST":
+
         form = TaskListForm(request.POST)
 
         if form.is_valid():
+
             task_list = form.save(commit=False)
             task_list.board = board
             task_list.save()
 
-            messages.success(request, "Lista creada correctamente.")
-            return redirect("boards:board_detail", board_id=board.id)
+            messages.success(
+                request,
+                "Lista creada correctamente."
+            )
+
+            return redirect(
+                "boards:board_detail",
+                board_id=board.id
+            )
+
     else:
+
         form = TaskListForm()
 
-    return render(request, "boards/list_form.html", {
-        "form": form,
-        "board": board
-    })
+    return render(
+        request,
+        "boards/list_form.html",
+        {
+            "form": form,
+            "board": board
+        }
+    )
+
+
+@login_required
+def list_update(request, list_id):
+    """
+    Permite editar una lista existente.
+    """
+
+    task_list = get_object_or_404(
+        TaskList,
+        id=list_id,
+        board__owner=request.user
+    )
+
+    if request.method == "POST":
+
+        form = TaskListForm(
+            request.POST,
+            instance=task_list
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Lista actualizada correctamente."
+            )
+
+            return redirect(
+                "boards:board_detail",
+                board_id=task_list.board.id
+            )
+
+    else:
+
+        form = TaskListForm(
+            instance=task_list
+        )
+
+    return render(
+        request,
+        "boards/list_form.html",
+        {
+            "form": form,
+            "board": task_list.board
+        }
+    )
+
+
+@login_required
+def list_delete(request, list_id):
+    """
+    Permite eliminar una lista del tablero.
+    """
+
+    task_list = get_object_or_404(
+        TaskList,
+        id=list_id,
+        board__owner=request.user
+    )
+
+    board_id = task_list.board.id
+
+    if request.method == "POST":
+
+        task_list.delete()
+
+        messages.success(
+            request,
+            "Lista eliminada correctamente."
+        )
+
+        return redirect(
+            "boards:board_detail",
+            board_id=board_id
+        )
+
+    return render(
+        request,
+        "boards/list_delete.html",
+        {
+            "task_list": task_list
+        }
+    )
 
 
 @login_required
@@ -178,22 +285,128 @@ def card_create(request, list_id):
     """
     Permite crear una nueva tarjeta dentro de una lista.
     """
-    task_list = get_object_or_404(TaskList, id=list_id)
+
+    task_list = get_object_or_404(
+        TaskList,
+        id=list_id,
+        board__owner=request.user
+    )
 
     if request.method == "POST":
+
         form = CardForm(request.POST)
 
         if form.is_valid():
+
             card = form.save(commit=False)
             card.task_list = task_list
             card.save()
 
-            messages.success(request, "Tarjeta creada correctamente.")
-            return redirect("boards:board_detail", board_id=task_list.board.id)
+            messages.success(
+                request,
+                "Tarjeta creada correctamente."
+            )
+
+            return redirect(
+                "boards:board_detail",
+                board_id=task_list.board.id
+            )
+
     else:
+
         form = CardForm()
 
-    return render(request, "boards/card_form.html", {
-        "form": form,
-        "task_list": task_list
-    })
+    return render(
+        request,
+        "boards/card_form.html",
+        {
+            "form": form,
+            "task_list": task_list
+        }
+    )
+
+
+@login_required
+def card_update(request, card_id):
+    """
+    Permite editar una tarjeta existente.
+    """
+
+    card = get_object_or_404(
+        Card,
+        id=card_id,
+        task_list__board__owner=request.user
+    )
+
+    if request.method == "POST":
+
+        form = CardForm(
+            request.POST,
+            instance=card
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                "Tarjeta actualizada correctamente."
+            )
+
+            return redirect(
+                "boards:board_detail",
+                board_id=card.task_list.board.id
+            )
+
+    else:
+
+        form = CardForm(
+            instance=card
+        )
+
+    return render(
+        request,
+        "boards/card_form.html",
+        {
+            "form": form,
+            "task_list": card.task_list
+        }
+    )
+
+
+@login_required
+def card_delete(request, card_id):
+    """
+    Permite eliminar una tarjeta.
+    """
+
+    card = get_object_or_404(
+        Card,
+        id=card_id,
+        task_list__board__owner=request.user
+    )
+
+    board_id = card.task_list.board.id
+
+    if request.method == "POST":
+
+        card.delete()
+
+        messages.success(
+            request,
+            "Tarjeta eliminada correctamente."
+        )
+
+        return redirect(
+            "boards:board_detail",
+            board_id=board_id
+        )
+
+    return render(
+        request,
+        "boards/card_delete.html",
+        {
+            "card": card
+        }
+    )

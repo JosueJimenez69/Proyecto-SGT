@@ -9,53 +9,82 @@ app_name = "boards"
 
 urlpatterns = [
 
+    # ==========================
     # Dashboard principal
+    # ==========================
     path(
         "",
         views.dashboard,
         name="dashboard"
     ),
 
-    # Crear tablero
+    # ==========================
+    # CRUD de Tableros
+    # ==========================
     path(
         "tableros/crear/",
         views.board_create,
         name="board_create"
     ),
 
-    # Ver detalle del tablero
     path(
         "tableros/<int:board_id>/",
         views.board_detail,
         name="board_detail"
     ),
 
-    # Editar tablero
     path(
         "tableros/<int:board_id>/editar/",
         views.board_update,
         name="board_update"
     ),
 
-    # Eliminar tablero
     path(
         "tableros/<int:board_id>/eliminar/",
         views.board_delete,
         name="board_delete"
     ),
 
-    # Crear lista
+    # ==========================
+    # CRUD de Listas
+    # ==========================
     path(
         "tableros/<int:board_id>/listas/crear/",
         views.list_create,
         name="list_create"
     ),
 
-    # Crear tarjeta
+    path(
+        "listas/<int:list_id>/editar/",
+        views.list_update,
+        name="list_update"
+    ),
+
+    path(
+        "listas/<int:list_id>/eliminar/",
+        views.list_delete,
+        name="list_delete"
+    ),
+
+    # ==========================
+    # CRUD de Tarjetas
+    # ==========================
     path(
         "listas/<int:list_id>/tarjetas/crear/",
         views.card_create,
         name="card_create"
+    ),
+
+    path(
+        "tarjetas/<int:card_id>/editar/",
+        views.card_update,
+        name="card_update"
+    ),
+
+    path(
+        "tarjetas/<int:card_id>/eliminar/",
+        views.card_delete,
+        name="card_delete"
     ),
 
 ]
