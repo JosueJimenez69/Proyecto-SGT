@@ -35,6 +35,7 @@ INSTALLED_APPS = [
 
     # Apps del proyecto SGT.
     'apps.boards',
+    'apps.accounts',
     'apps.notifications',
     'apps.realtime',
     'users',

@@ -6,11 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ board.title }}</title>
 
+    <!-- Bootstrap para el diseño visual del tablero -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body style="background: linear-gradient(135deg,#0d6efd,#6f42c1); min-height:100vh;">
 
+    <!-- Barra superior -->
     <nav class="navbar navbar-dark bg-dark shadow">
         <div class="container-fluid">
             <span class="navbar-brand fw-bold">
@@ -23,8 +25,10 @@
         </div>
     </nav>
 
+    <!-- Contenido principal del tablero -->
     <div class="container-fluid py-4">
 
+        <!-- Encabezado del tablero -->
         <div class="d-flex justify-content-between align-items-center text-white mb-4">
             <div>
                 <h2 class="fw-bold">
@@ -35,6 +39,7 @@
                     {{ board.description|default:"Sin descripción." }}
                 </p>
 
+                <!-- Aviso para usuarios miembros -->
                 {% if board.owner != request.user %}
                 <span class="badge bg-light text-dark p-2">
                     Solo lectura · Eres miembro de este tablero
@@ -42,6 +47,7 @@
                 {% endif %}
             </div>
 
+            <!-- Solo el propietario puede crear listas -->
             {% if board.owner == request.user %}
             <a href="{% url 'boards:list_create' board.id %}" class="btn btn-light">
                 + Nueva lista
@@ -49,12 +55,15 @@
             {% endif %}
         </div>
 
+        <!-- Contenedor horizontal de listas -->
         <div class="d-flex gap-4 overflow-auto pb-4">
 
             {% for list in lists %}
 
+            <!-- Columna de lista -->
             <div class="card shadow border-0" style="min-width:320px;max-width:320px;">
 
+                <!-- Título de la lista y cantidad de tarjetas -->
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <strong>{{ list.title }}</strong>
@@ -67,6 +76,7 @@
 
                 <div class="card-body bg-light">
 
+                    <!-- Acciones de lista solo para propietario -->
                     {% if board.owner == request.user %}
                     <div class="d-grid gap-2 mb-3">
                         <a href="{% url 'boards:list_update' list.id %}" class="btn btn-warning btn-sm">
@@ -81,20 +91,36 @@
                     <hr>
                     {% endif %}
 
+                    <!-- Tarjetas pertenecientes a la lista -->
                     {% for card in list.cards.all %}
 
                     <div class="card mb-3 shadow-sm border-0">
                         <div class="card-body">
+
+                            <!-- Título de la tarjeta -->
                             <h6 class="fw-bold">
                                 {{ card.title }}
                             </h6>
 
+                            <!-- Descripción de la tarjeta -->
                             {% if card.description %}
                             <p class="small text-muted">
                                 {{ card.description }}
                             </p>
                             {% endif %}
 
+                            <!-- Usuario asignado a la tarjeta -->
+                            <p class="small mb-2">
+                                👤 <strong>Asignado a:</strong>
+
+                                {% if card.assigned_to %}
+                                {{ card.assigned_to.username }}
+                                {% else %}
+                                Sin asignar
+                                {% endif %}
+                            </p>
+
+                            <!-- Estado de la tarjeta -->
                             {% if card.completed %}
                             <span class="badge bg-success">
                                 Finalizada
@@ -105,6 +131,7 @@
                             </span>
                             {% endif %}
 
+                            <!-- Acciones de tarjeta solo para propietario -->
                             {% if board.owner == request.user %}
                             <div class="d-grid gap-2 mt-3">
                                 <a href="{% url 'boards:card_update' card.id %}" class="btn btn-outline-primary btn-sm">
@@ -121,12 +148,14 @@
 
                     {% empty %}
 
+                    <!-- Mensaje si la lista no contiene tarjetas -->
                     <div class="alert alert-light">
                         No existen tarjetas.
                     </div>
 
                     {% endfor %}
 
+                    <!-- Solo el propietario puede agregar tarjetas -->
                     {% if board.owner == request.user %}
                     <a href="{% url 'boards:card_create' list.id %}" class="btn btn-success w-100">
                         + Agregar tarjeta
@@ -138,6 +167,7 @@
 
             {% empty %}
 
+            <!-- Mensaje si el tablero aún no tiene listas -->
             <div class="alert alert-light shadow">
                 <h5>No existen listas.</h5>
 
