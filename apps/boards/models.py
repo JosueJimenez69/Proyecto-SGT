@@ -75,6 +75,9 @@ class TaskList(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        ordering = ["position"]
+
     # Representación en texto del objeto.
     def __str__(self):
         return self.title
@@ -130,6 +133,9 @@ class Card(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True
     )
+
+    class Meta:
+        ordering = ["position"]
 
     # Representación en texto del objeto.
     def __str__(self):
