@@ -5,19 +5,27 @@ from django.db.models import Q
 
 from .models import Board, TaskList, Card
 from .forms import BoardForm, TaskListForm, CardForm
+# pyrefly: ignore [missing-import]
+from apps.notifications.models import Notification
 
 
 @login_required
 def dashboard(request):
     """
     Muestra los tableros donde el usuario es propietario o miembro.
+    También muestra las últimas notificaciones no leídas del usuario.
     """
     boards = Board.objects.filter(
         Q(owner=request.user) | Q(members=request.user)
     ).distinct()
 
+    notifications = request.user.notifications.filter(
+        is_read=False
+    ).order_by("-created_at")[:5]
+
     return render(request, "boards/dashboard.html", {
-        "boards": boards
+        "boards": boards,
+        "notifications": notifications
     })
 
 
@@ -71,7 +79,6 @@ def board_update(request, board_id):
     """
     Permite editar un tablero existente.
     """
-
     board = get_object_or_404(
         Board,
         id=board_id,
@@ -79,14 +86,9 @@ def board_update(request, board_id):
     )
 
     if request.method == "POST":
-
-        form = BoardForm(
-            request.POST,
-            instance=board
-        )
+        form = BoardForm(request.POST, instance=board)
 
         if form.is_valid():
-
             form.save()
 
             messages.success(
@@ -94,15 +96,10 @@ def board_update(request, board_id):
                 "Tablero actualizado correctamente."
             )
 
-            return redirect(
-                "boards:dashboard"
-            )
+            return redirect("boards:dashboard")
 
     else:
-
-        form = BoardForm(
-            instance=board
-        )
+        form = BoardForm(instance=board)
 
     return render(
         request,
@@ -119,7 +116,6 @@ def board_delete(request, board_id):
     """
     Permite eliminar un tablero del usuario.
     """
-
     board = get_object_or_404(
         Board,
         id=board_id,
@@ -127,7 +123,6 @@ def board_delete(request, board_id):
     )
 
     if request.method == "POST":
-
         board.delete()
 
         messages.success(
@@ -135,9 +130,7 @@ def board_delete(request, board_id):
             "Tablero eliminado correctamente."
         )
 
-        return redirect(
-            "boards:dashboard"
-        )
+        return redirect("boards:dashboard")
 
     return render(
         request,
@@ -153,7 +146,6 @@ def list_create(request, board_id):
     """
     Permite crear una nueva lista dentro de un tablero del usuario.
     """
-
     board = get_object_or_404(
         Board,
         id=board_id,
@@ -161,11 +153,9 @@ def list_create(request, board_id):
     )
 
     if request.method == "POST":
-
         form = TaskListForm(request.POST)
 
         if form.is_valid():
-
             task_list = form.save(commit=False)
             task_list.board = board
             task_list.save()
@@ -181,7 +171,6 @@ def list_create(request, board_id):
             )
 
     else:
-
         form = TaskListForm()
 
     return render(
@@ -199,7 +188,6 @@ def list_update(request, list_id):
     """
     Permite editar una lista existente.
     """
-
     task_list = get_object_or_404(
         TaskList,
         id=list_id,
@@ -207,14 +195,12 @@ def list_update(request, list_id):
     )
 
     if request.method == "POST":
-
         form = TaskListForm(
             request.POST,
             instance=task_list
         )
 
         if form.is_valid():
-
             form.save()
 
             messages.success(
@@ -228,10 +214,7 @@ def list_update(request, list_id):
             )
 
     else:
-
-        form = TaskListForm(
-            instance=task_list
-        )
+        form = TaskListForm(instance=task_list)
 
     return render(
         request,
@@ -248,7 +231,6 @@ def list_delete(request, list_id):
     """
     Permite eliminar una lista del tablero.
     """
-
     task_list = get_object_or_404(
         TaskList,
         id=list_id,
@@ -258,7 +240,6 @@ def list_delete(request, list_id):
     board_id = task_list.board.id
 
     if request.method == "POST":
-
         task_list.delete()
 
         messages.success(
@@ -284,8 +265,8 @@ def list_delete(request, list_id):
 def card_create(request, list_id):
     """
     Permite crear una nueva tarjeta dentro de una lista.
+    Si la tarjeta se asigna a un usuario, genera una notificación.
     """
-
     task_list = get_object_or_404(
         TaskList,
         id=list_id,
@@ -293,14 +274,18 @@ def card_create(request, list_id):
     )
 
     if request.method == "POST":
-
         form = CardForm(request.POST)
 
         if form.is_valid():
-
             card = form.save(commit=False)
             card.task_list = task_list
             card.save()
+
+            if card.assigned_to:
+                Notification.objects.create(
+                    user=card.assigned_to,
+                    message=f"Se te asignó la tarjeta: {card.title}"
+                )
 
             messages.success(
                 request,
@@ -313,7 +298,6 @@ def card_create(request, list_id):
             )
 
     else:
-
         form = CardForm()
 
     return render(
@@ -331,7 +315,6 @@ def card_update(request, card_id):
     """
     Permite editar una tarjeta existente.
     """
-
     card = get_object_or_404(
         Card,
         id=card_id,
@@ -339,14 +322,12 @@ def card_update(request, card_id):
     )
 
     if request.method == "POST":
-
         form = CardForm(
             request.POST,
             instance=card
         )
 
         if form.is_valid():
-
             form.save()
 
             messages.success(
@@ -360,10 +341,7 @@ def card_update(request, card_id):
             )
 
     else:
-
-        form = CardForm(
-            instance=card
-        )
+        form = CardForm(instance=card)
 
     return render(
         request,
@@ -380,7 +358,6 @@ def card_delete(request, card_id):
     """
     Permite eliminar una tarjeta.
     """
-
     card = get_object_or_404(
         Card,
         id=card_id,
@@ -390,7 +367,6 @@ def card_delete(request, card_id):
     board_id = card.task_list.board.id
 
     if request.method == "POST":
-
         card.delete()
 
         messages.success(

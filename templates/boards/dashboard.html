@@ -79,6 +79,26 @@
         {% endfor %}
         {% endif %}
 
+        {% if notifications %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-warning fw-bold">
+                🔔 Notificaciones recientes
+            </div>
+
+            <div class="card-body">
+                {% for notification in notifications %}
+                <div class="alert alert-light border mb-2">
+                    {{ notification.message }}
+                    <br>
+                    <small class="text-muted">
+                        {{ notification.created_at|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="row mb-5">
             <div class="col-md-4">
                 <div class="card stat-card shadow text-center">
