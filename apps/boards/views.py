@@ -1,3 +1,7 @@
+import json
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -386,3 +390,53 @@ def card_delete(request, card_id):
             "card": card
         }
     )
+
+@login_required
+@require_POST
+def reorder_lists(request):
+    """
+    Reordena las listas de un tablero mediante Drag & Drop.
+    Solo el propietario del tablero puede modificar el orden.
+    """
+
+    data = json.loads(request.body)
+
+    for index, list_id in enumerate(data.get("list_ids", [])):
+        TaskList.objects.filter(
+            id=list_id,
+            board__owner=request.user
+        ).update(position=index)
+
+    return JsonResponse({
+        "status": "ok"
+    })
+
+
+@login_required
+@require_POST
+def reorder_cards(request):
+    """
+    Reordena las tarjetas dentro de una lista mediante Drag & Drop.
+    Solo el propietario del tablero puede modificar el orden.
+    """
+
+    data = json.loads(request.body)
+
+    list_id = data.get("list_id")
+    card_ids = data.get("card_ids", [])
+
+    task_list = get_object_or_404(
+        TaskList,
+        id=list_id,
+        board__owner=request.user
+    )
+
+    for index, card_id in enumerate(card_ids):
+        Card.objects.filter(
+            id=card_id,
+            task_list=task_list
+        ).update(position=index)
+
+    return JsonResponse({
+        "status": "ok"
+    })

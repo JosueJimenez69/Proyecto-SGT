@@ -87,4 +87,19 @@ urlpatterns = [
         name="card_delete"
     ),
 
+    # ==========================
+    # Drag & Drop
+    # ==========================
+    path(
+        "listas/reordenar/",
+        views.reorder_lists,
+        name="reorder_lists"
+    ),
+
+    path(
+        "tarjetas/reordenar/",
+        views.reorder_cards,
+        name="reorder_cards"
+    ),
+
 ]
