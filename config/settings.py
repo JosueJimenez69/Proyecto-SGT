@@ -22,6 +22,7 @@ ALLOWED_HOSTS = ['*']
 # Aplicaciones instaladas.
 INSTALLED_APPS = [
     # Apps internas de Django.
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -34,11 +35,13 @@ INSTALLED_APPS = [
     'channels',
 
     # Apps del proyecto SGT.
-    'boards',
+    'apps.boards',
+    'apps.accounts',
+    'apps.notifications',
+    'apps.realtime',
     'users',
-    'notifications',
-    'realtime',
 ]
+
 
 
 # Middlewares del proyecto.

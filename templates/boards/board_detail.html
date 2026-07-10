@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ board.title }}</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0d6efd, #6f42c1);
+            min-height: 100vh;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            user-select: none;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+        }
+
+        .list-item {
+            min-width: 320px;
+            max-width: 320px;
+        }
+
+        .realtime-alert {
+            z-index: 9999;
+            min-width: 320px;
+            max-width: 420px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Barra superior -->
+    <nav class="navbar navbar-dark bg-dark shadow">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold">
+                📋 SGT - Gestión de Tareas
+            </span>
+
+            <a href="{% url 'boards:dashboard' %}" class="btn btn-outline-light">
+                ← Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container-fluid py-4">
+
+        <!-- Encabezado del tablero -->
+        <div class="d-flex justify-content-between align-items-center text-white mb-4">
+            <div>
+                <h2 class="fw-bold">{{ board.title }}</h2>
+
+                <p class="opacity-75">
+                    {{ board.description|default:"Sin descripción." }}
+                </p>
+
+                {% if board.owner != request.user %}
+                <span class="badge bg-light text-dark p-2">
+                    Solo lectura · Eres miembro de este tablero
+                </span>
+                {% endif %}
+            </div>
+
+            {% if board.owner == request.user %}
+            <a href="{% url 'boards:list_create' board.id %}" class="btn btn-light">
+                + Nueva lista
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Listas del tablero -->
+        <div id="lists-container" class="d-flex gap-4 overflow-auto pb-4">
+
+            {% for list in lists %}
+
+            <div class="card shadow border-0 list-item" data-list-id="{{ list.id }}">
+
+                <!-- Encabezado de la lista -->
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="drag-handle">
+                            ↕ {{ list.title }}
+                        </strong>
+
+                        <!-- Este valor representa la cantidad de tarjetas, no la posición -->
+                        <span class="badge bg-light text-dark">
+                            {{ list.cards.count }}
+                            tarjeta{{ list.cards.count|pluralize:"s" }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body bg-light">
+
+                    <!-- Acciones disponibles solo para el propietario -->
+                    {% if board.owner == request.user %}
+                    <div class="d-grid gap-2 mb-3">
+                        <a href="{% url 'boards:list_update' list.id %}" class="btn btn-warning btn-sm">
+                            ✏ Editar lista
+                        </a>
+
+                        <a href="{% url 'boards:list_delete' list.id %}" class="btn btn-danger btn-sm">
+                            🗑 Eliminar lista
+                        </a>
+                    </div>
+
+                    <hr>
+                    {% endif %}
+
+                    <!-- Tarjetas de la lista -->
+                    <div class="cards-container" data-list-id="{{ list.id }}">
+
+                        {% for card in list.cards.all %}
+
+                        <div class="card mb-3 shadow-sm border-0 card-item" data-card-id="{{ card.id }}">
+                            <div class="card-body">
+
+                                <h6 class="fw-bold drag-handle">
+                                    ↕ {{ card.title }}
+                                </h6>
+
+                                {% if card.description %}
+                                <p class="small text-muted">
+                                    {{ card.description }}
+                                </p>
+                                {% endif %}
+
+                                <p class="small mb-2">
+                                    👤 <strong>Asignado a:</strong>
+
+                                    {% if card.assigned_to %}
+                                    {{ card.assigned_to.username }}
+                                    {% else %}
+                                    Sin asignar
+                                    {% endif %}
+                                </p>
+
+                                {% if card.completed %}
+                                <span class="badge bg-success">
+                                    Finalizada
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    Pendiente
+                                </span>
+                                {% endif %}
+
+                                {% if board.owner == request.user %}
+                                <div class="d-grid gap-2 mt-3">
+                                    <a href="{% url 'boards:card_update' card.id %}"
+                                        class="btn btn-outline-primary btn-sm">
+                                        Editar tarjeta
+                                    </a>
+
+                                    <a href="{% url 'boards:card_delete' card.id %}"
+                                        class="btn btn-outline-danger btn-sm">
+                                        Eliminar tarjeta
+                                    </a>
+                                </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                        {% empty %}
+
+                        <div class="alert alert-light">
+                            No existen tarjetas.
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    {% if board.owner == request.user %}
+                    <a href="{% url 'boards:card_create' list.id %}" class="btn btn-success w-100">
+                        + Agregar tarjeta
+                    </a>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            {% empty %}
+
+            <div class="alert alert-light shadow">
+                <h5>No existen listas.</h5>
+
+                {% if board.owner == request.user %}
+                <p class="mb-0">
+                    Crea la primera lista para comenzar.
+                </p>
+                {% else %}
+                <p class="mb-0">
+                    Este tablero aún no tiene listas.
+                </p>
+                {% endif %}
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <!-- Drag & Drop: disponible únicamente para el propietario -->
+    {% if board.owner == request.user %}
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+    <script>
+        function getCSRFToken() {
+            return "{{ csrf_token }}";
+        }
+
+        async function postOrder(url, payload) {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken()
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo guardar el nuevo orden.");
+            }
+
+            return response.json();
+        }
+
+        const listsContainer = document.getElementById("lists-container");
+
+        if (listsContainer) {
+            new Sortable(listsContainer, {
+                animation: 150,
+                ghostClass: "sortable-ghost",
+                handle: ".drag-handle",
+
+                onEnd: async function () {
+                    const listIds = Array.from(
+                        document.querySelectorAll(".list-item")
+                    ).map(item => item.dataset.listId);
+
+                    try {
+                        await postOrder(
+                            "{% url 'boards:reorder_lists' %}",
+                            { list_ids: listIds }
+                        );
+                    } catch (error) {
+                        console.error(error);
+                        window.location.reload();
+                    }
+                }
+            });
+        }
+
+        document.querySelectorAll(".cards-container").forEach(container => {
+            new Sortable(container, {
+                animation: 150,
+                ghostClass: "sortable-ghost",
+                handle: ".drag-handle",
+
+                onEnd: async function () {
+                    const listId = container.dataset.listId;
+
+                    const cardIds = Array.from(
+                        container.querySelectorAll(".card-item")
+                    ).map(item => item.dataset.cardId);
+
+                    try {
+                        await postOrder(
+                            "{% url 'boards:reorder_cards' %}",
+                            {
+                                list_id: listId,
+                                card_ids: cardIds
+                            }
+                        );
+                    } catch (error) {
+                        console.error(error);
+                        window.location.reload();
+                    }
+                }
+            });
+        });
+    </script>
+
+    {% endif %}
+
+    <!-- WebSocket: propietario y miembros reciben avisos en tiempo real -->
+    {% if board.owner == request.user or request.user in board.members.all %}
+
+    <script>
+        const boardId = "{{ board.id }}";
+        const currentUserId = "{{ request.user.id }}";
+        const ownerId = "{{ board.owner.id }}";
+        const isOwner = currentUserId === ownerId;
+
+        const websocketProtocol =
+            window.location.protocol === "https:" ? "wss" : "ws";
+
+        const boardSocket = new WebSocket(
+            websocketProtocol +
+            "://" +
+            window.location.host +
+            "/ws/boards/" +
+            boardId +
+            "/"
+        );
+
+        boardSocket.onopen = function () {
+            console.log(
+                "WebSocket conectado al tablero " + boardId
+            );
+        };
+
+        boardSocket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+
+            console.log(
+                "Actualización recibida:",
+                data.message
+            );
+
+            const alertBox = document.createElement("div");
+            alertBox.className =
+                "alert alert-info shadow position-fixed top-0 end-0 m-4 realtime-alert";
+
+            const title = document.createElement("strong");
+            title.textContent = "🔔 Actualización del tablero";
+
+            const lineBreak = document.createElement("br");
+            const messageText = document.createTextNode(data.message);
+
+            alertBox.appendChild(title);
+            alertBox.appendChild(lineBreak);
+            alertBox.appendChild(messageText);
+
+            document.body.appendChild(alertBox);
+
+            /*
+             * El propietario ya ve el resultado mediante el redirect
+             * o el movimiento realizado en pantalla.
+             * El miembro recarga automáticamente para ver el cambio.
+             */
+            if (!isOwner) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                setTimeout(function () {
+                    alertBox.remove();
+                }, 4000);
+            }
+        };
+
+        boardSocket.onerror = function (error) {
+            console.error(
+                "Error en la conexión WebSocket:",
+                error
+            );
+        };
+
+        boardSocket.onclose = function (event) {
+            console.log(
+                "WebSocket desconectado. Código:",
+                event.code
+            );
+        };
+    </script>
+
+    {% endif %}
+
+</body>
+
+</html>
