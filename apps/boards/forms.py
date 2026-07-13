@@ -1,8 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.db.models import Q
 
-# Modelos principales de la aplicación boards.
 from .models import Board, Card, TaskList
 
 
@@ -10,13 +8,12 @@ class BoardForm(forms.ModelForm):
     """
     Formulario para crear y editar tableros.
 
-    Permite excluir al propietario de la lista de miembros
-    cuando se recibe el usuario mediante el parámetro ``user``.
+    Permite seleccionar varios miembros y excluye al propietario
+    de la lista de usuarios disponibles.
     """
 
     class Meta:
         model = Board
-
         fields = [
             "title",
             "description",
@@ -61,10 +58,7 @@ class BoardForm(forms.ModelForm):
 
     def __init__(self, *args, user=None, **kwargs):
         """
-        Configura dinámicamente los miembros disponibles.
-
-        Si se recibe ``user``, dicho usuario se excluye para evitar
-        que el propietario sea agregado también como miembro.
+        Excluye al usuario actual de la lista de miembros.
         """
 
         super().__init__(*args, **kwargs)
@@ -80,10 +74,13 @@ class BoardForm(forms.ModelForm):
 
     def clean_members(self):
         """
-        Evita guardar al propietario como miembro del mismo tablero.
+        Evita que el propietario quede guardado como miembro.
         """
 
         members = self.cleaned_data.get("members")
+
+        if members is None:
+            return members
 
         if (
             self.instance
@@ -101,13 +98,11 @@ class TaskListForm(forms.ModelForm):
     """
     Formulario para crear y editar listas.
 
-    La posición no se muestra porque se administra automáticamente
-    mediante Drag & Drop.
+    La posición se administra mediante Drag & Drop.
     """
 
     class Meta:
         model = TaskList
-
         fields = [
             "title",
         ]
@@ -131,14 +126,12 @@ class CardForm(forms.ModelForm):
     """
     Formulario para crear y editar tarjetas.
 
-    La posición se administra automáticamente mediante Drag & Drop.
-    Cuando se recibe un tablero o una lista, solo permite asignar
-    usuarios que participan en dicho tablero.
+    Solo permite asignar tarjetas a miembros activos del tablero.
+    El propietario no aparece como opción.
     """
 
     class Meta:
         model = Card
-
         fields = [
             "title",
             "description",
@@ -188,27 +181,62 @@ class CardForm(forms.ModelForm):
         **kwargs,
     ):
         """
-        Filtra los usuarios asignables.
-
-        Si se recibe ``task_list``, se obtiene el tablero desde ella.
-        Si no se recibe contexto, se muestran usuarios activos para
-        mantener compatibilidad con las vistas existentes.
+        Determina el tablero y filtra los usuarios asignables.
         """
 
         super().__init__(*args, **kwargs)
 
         if task_list is not None:
             board = task_list.board
+        elif (
+            self.instance
+            and self.instance.pk
+            and self.instance.task_list_id
+        ):
+            board = self.instance.task_list.board
+
+        self.board = board
 
         if board is not None:
-            queryset = User.objects.filter(
-                Q(id=board.owner_id)
-                | Q(boards=board)
+            queryset = board.members.filter(
+                is_active=True
+            ).exclude(
+                id=board.owner_id
             ).distinct().order_by("username")
         else:
-            queryset = User.objects.filter(
-                is_active=True
-            ).order_by("username")
+            queryset = User.objects.none()
 
         self.fields["assigned_to"].queryset = queryset
         self.fields["assigned_to"].empty_label = "Sin asignar"
+
+    def clean_assigned_to(self):
+        """
+        Valida que el responsable sea un miembro activo del tablero.
+        """
+
+        assigned_to = self.cleaned_data.get("assigned_to")
+
+        if assigned_to is None:
+            return None
+
+        if self.board is None:
+            raise forms.ValidationError(
+                "No se pudo determinar el tablero de la tarjeta."
+            )
+
+        if assigned_to.id == self.board.owner_id:
+            raise forms.ValidationError(
+                "El propietario del tablero no puede ser asignado."
+            )
+
+        is_member = self.board.members.filter(
+            id=assigned_to.id,
+            is_active=True,
+        ).exists()
+
+        if not is_member:
+            raise forms.ValidationError(
+                "La tarjeta solo puede asignarse a un miembro del tablero."
+            )
+
+        return assigned_to
