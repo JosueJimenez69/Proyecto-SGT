@@ -18,7 +18,6 @@ from channels.layers import get_channel_layer
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
@@ -88,16 +87,6 @@ def is_board_participant(board, user):
     )
 
 
-def configure_board_members_field(form, current_user):
-    """
-    Excluye al usuario propietario de la lista de miembros disponibles.
-    """
-
-    if "members" in form.fields:
-        form.fields["members"].queryset = User.objects.exclude(
-            id=current_user.id
-        ).order_by("username")
-
 
 @login_required
 def dashboard(request):
@@ -166,8 +155,10 @@ def board_create(request):
     """
 
     if request.method == "POST":
-        form = BoardForm(request.POST)
-        configure_board_members_field(form, request.user)
+        form = BoardForm(
+            request.POST,
+            user=request.user,
+        )
 
         if form.is_valid():
             board = form.save(commit=False)
@@ -187,8 +178,9 @@ def board_create(request):
             return redirect("boards:dashboard")
 
     else:
-        form = BoardForm()
-        configure_board_members_field(form, request.user)
+        form = BoardForm(
+            user=request.user,
+        )
 
     return render(
         request,
@@ -219,8 +211,8 @@ def board_update(request, board_id):
         form = BoardForm(
             request.POST,
             instance=board,
+            user=request.user,
         )
-        configure_board_members_field(form, request.user)
 
         if form.is_valid():
             updated_board = form.save()
@@ -252,8 +244,10 @@ def board_update(request, board_id):
             return redirect("boards:dashboard")
 
     else:
-        form = BoardForm(instance=board)
-        configure_board_members_field(form, request.user)
+        form = BoardForm(
+            instance=board,
+            user=request.user,
+        )
 
     return render(
         request,
@@ -556,20 +550,6 @@ def card_create(request, list_id):
                 exclude_user=request.user,
             )
 
-            if (
-                card.assigned_to
-                and card.assigned_to != request.user
-                and not is_board_participant(board, card.assigned_to)
-            ):
-                Notification.objects.create(
-                    user=card.assigned_to,
-                    message=(
-                        f"Se te asignó la tarjeta "
-                        f"'{card.title}' en el tablero "
-                        f"'{board.title}'."
-                    ),
-                )
-
             send_board_update(
                 board.id,
                 action_message,
@@ -640,29 +620,6 @@ def card_update(request, card_id):
                 exclude_user=request.user,
             )
 
-            assignment_changed = (
-                updated_card.assigned_to_id
-                != previous_assigned_user_id
-            )
-
-            if (
-                assignment_changed
-                and updated_card.assigned_to
-                and updated_card.assigned_to != request.user
-                and not is_board_participant(
-                    board,
-                    updated_card.assigned_to,
-                )
-            ):
-                Notification.objects.create(
-                    user=updated_card.assigned_to,
-                    message=(
-                        f"Se te asignó la tarjeta "
-                        f"'{updated_card.title}' en el tablero "
-                        f"'{board.title}'."
-                    ),
-                )
-
             send_board_update(
                 board.id,
                 action_message,
@@ -728,19 +685,6 @@ def card_delete(request, card_id):
         )
 
         card.delete()
-
-        if (
-            assigned_user
-            and assigned_user != request.user
-            and not is_board_participant(board, assigned_user)
-        ):
-            Notification.objects.create(
-                user=assigned_user,
-                message=(
-                    f"La tarjeta '{card_title}' "
-                    f"que tenías asignada fue eliminada."
-                ),
-            )
 
         send_board_update(
             board_id,
